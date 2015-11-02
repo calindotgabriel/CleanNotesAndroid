@@ -1,6 +1,5 @@
 package cs.ubbcluj.ro.cleannotes.view.fragment;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -8,24 +7,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cs.ubbcluj.ro.cleannotes.R;
-import cs.ubbcluj.ro.cleannotes.event.NoteCreatedEvent;
-import cs.ubbcluj.ro.cleannotes.manager.NoteManager;
+import cs.ubbcluj.ro.cleannotes.async.LoadNotesTask;
+import cs.ubbcluj.ro.cleannotes.event.OnNotesLoadedEvent;
+import cs.ubbcluj.ro.cleannotes.model.StickyBusFragment;
 import cs.ubbcluj.ro.cleannotes.model.domain.Note;
 import cs.ubbcluj.ro.cleannotes.view.RecyclerViewEmptySupport;
 import cs.ubbcluj.ro.cleannotes.view.adapter.NoteAdapter;
-import cs.ubbcluj.ro.cleannotes.view.fragment.DetailFragment;
-import de.greenrobot.event.EventBus;
 
 /**
  * Created by motan on 30.10.2015.
  */
-public class ListFragment extends Fragment {
+public class ListFragment extends StickyBusFragment {
 
     @Bind(R.id.rv_fl)
     RecyclerViewEmptySupport mRecyclerView;
@@ -33,31 +32,20 @@ public class ListFragment extends Fragment {
     @Bind(R.id.ev_fl)
     TextView mEmptyView;
 
-    private NoteManager mManager;
-    private NoteAdapter mAdapter;
-
-    @Override
-    public void onStart() {
-        EventBus.getDefault().registerSticky(this);
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
 
     /**
-     * Called when a new note was added.
-     * @param event contains information.
+     * Called when the notes finished querying from the DB.
+     * @param event contains notes.
      */
-    public void onEvent(NoteCreatedEvent event) {
-        final Note note = new Note(event.getTitle(), event.getContent());
-        mManager.add(note);
-        mAdapter.notifyDataSetChanged();
+    public void onEvent(OnNotesLoadedEvent event) {
+        initList(event.notes);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        new LoadNotesTask().execute();
+    }
 
     @Nullable
     @Override
@@ -67,41 +55,25 @@ public class ListFragment extends Fragment {
         return view;
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        initUI();
-    }
-
-    private void initUI() {
-        mManager = new NoteManager(getActivity());
+    private void initList(List<Note> notes) {
         final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new NoteAdapter(getActivity(), mManager.getNotesReference());
-        mRecyclerView.setAdapter(mAdapter);
+        NoteAdapter adapter = new NoteAdapter(getActivity(), notes);
+        mRecyclerView.setAdapter(adapter);
         mRecyclerView.setEmptyView(mEmptyView);
-        mAdapter.setEventCallback(new NoteAdapter.EventCallback() {
-            @Override
-            public void onNoteDeleted(int noteId) {
-                mManager.delete(noteId);
-            }
-        });
     }
 
 
     @OnClick(R.id.fab)
     void onFabClicked() {
-        goToAddFragment();
+        switchToDetailFragment();
     }
 
-    private void goToAddFragment() {
-        final DetailFragment fragment = DetailFragment.newInstance("1", "2");
-
+    private void switchToDetailFragment() {
         getActivity().getFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right,
                         R.anim.enter_from_left, R.anim.exit_to_left)
-                .replace(R.id.fragment_container, fragment)
+                .replace(R.id.fragment_container, new DetailFragment())
                 .addToBackStack(null)
                 .commit();
     }

@@ -1,21 +1,16 @@
 package cs.ubbcluj.ro.cleannotes.model.domain;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import com.orm.SugarRecord;
 
 /**
  * Model class used for notes.
  */
-public class Note extends RealmObject {
-
-    @PrimaryKey
-    private int id;
+public class Note extends SugarRecord<Note> {
 
     private String title;
     private String content;
 
-    public Note() {
-    }
+    public Note() { } //required.
 
     public Note(String title, String content) {
         this.title = title;
@@ -32,19 +27,6 @@ public class Note extends RealmObject {
 
     public Note(String content) {
         this.content = content;
-    }
-
-    public Note(int id, String content) {
-        this.id = id;
-        this.content = content;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getContent() {

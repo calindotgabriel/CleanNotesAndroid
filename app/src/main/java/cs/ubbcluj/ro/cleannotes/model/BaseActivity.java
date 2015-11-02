@@ -23,21 +23,6 @@ public class BaseActivity extends AppCompatActivity implements FragmentManager.O
         this.mListener = listener;
     }
 
-/*
-    @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onStop() {
-        EventBus.getDefault().unregister(this);
-        super.onStop();
-    }
-*/
-
-
     /**
      * Back button support for fragments.
      */
@@ -75,11 +60,6 @@ public class BaseActivity extends AppCompatActivity implements FragmentManager.O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_clear:
-                //RealmUtils.cleanupTable(this, Note.class);
-                //TODO clearAll in manager
-                //mAdapter.notifyDataSetChanged();
-                break;
             case android.R.id.home:
                 popBackStack();
                 break;

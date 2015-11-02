@@ -15,18 +15,14 @@ import butterknife.ButterKnife;
 import cs.ubbcluj.ro.cleannotes.MainActivity;
 import cs.ubbcluj.ro.cleannotes.R;
 import cs.ubbcluj.ro.cleannotes.event.NoteCreatedEvent;
+import cs.ubbcluj.ro.cleannotes.event.NotePressedEvent;
 import cs.ubbcluj.ro.cleannotes.model.BaseActivity;
+import cs.ubbcluj.ro.cleannotes.model.BusFragment;
+import cs.ubbcluj.ro.cleannotes.model.domain.Note;
 import cs.ubbcluj.ro.cleannotes.util.KeyboardUtils;
 import de.greenrobot.event.EventBus;
 
-public class DetailFragment extends Fragment {
-
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+public class DetailFragment extends BusFragment {
 
     MainActivity mMainActivity;
 
@@ -36,35 +32,16 @@ public class DetailFragment extends Fragment {
     @Bind(R.id.title_fd)
     EditText mTitleEt;
 
+
     public DetailFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DetailFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static DetailFragment newInstance(String param1, String param2) {
-        DetailFragment fragment = new DetailFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public void onEvent(NotePressedEvent event) {
+        //TODO should I not do this here ? research
+        mTitleEt.setText(event.note.getTitle());
+        mContentEt.setText(event.note.getContent());
     }
 
     @Override
@@ -73,6 +50,7 @@ public class DetailFragment extends Fragment {
         KeyboardUtils.showKeyboard(mContentEt);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -87,7 +65,7 @@ public class DetailFragment extends Fragment {
                 final String title = mTitleEt.getText().toString();
                 final String content = mContentEt.getText().toString();
                 if (!TextUtils.isEmpty(content)) {
-                    EventBus.getDefault().postSticky(new NoteCreatedEvent(title,  content));
+                    EventBus.getDefault().postSticky(new NoteCreatedEvent(title, content));
                 } else {
                     Toast.makeText(mMainActivity, "Empty note not saved", Toast.LENGTH_SHORT).show();
                 }
@@ -99,7 +77,6 @@ public class DetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         final View view = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, view);
         return view;
