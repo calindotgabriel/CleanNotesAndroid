@@ -1,28 +1,23 @@
 package cs.ubbcluj.ro.cleannotes.view.fragment;
 
-
-import android.os.Bundle;
 import android.app.Fragment;
-import android.text.TextUtils;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import cs.ubbcluj.ro.cleannotes.Constants;
 import cs.ubbcluj.ro.cleannotes.MainActivity;
 import cs.ubbcluj.ro.cleannotes.R;
-import cs.ubbcluj.ro.cleannotes.event.NoteCreatedEvent;
-import cs.ubbcluj.ro.cleannotes.event.NotePressedEvent;
 import cs.ubbcluj.ro.cleannotes.model.BaseActivity;
-import cs.ubbcluj.ro.cleannotes.model.BusFragment;
 import cs.ubbcluj.ro.cleannotes.model.domain.Note;
+import cs.ubbcluj.ro.cleannotes.model.fragment.BaseFragment;
 import cs.ubbcluj.ro.cleannotes.util.KeyboardUtils;
-import de.greenrobot.event.EventBus;
 
-public class DetailFragment extends BusFragment {
+public class DetailFragment extends BaseFragment {
 
     MainActivity mMainActivity;
 
@@ -31,23 +26,23 @@ public class DetailFragment extends BusFragment {
 
     @Bind(R.id.title_fd)
     EditText mTitleEt;
+    private Note mTargetedNote;
 
 
-    public DetailFragment() {
-        // Required empty public constructor
-    }
+    public DetailFragment() { }
 
-
-    public void onEvent(NotePressedEvent event) {
-        //TODO should I not do this here ? research
-        mTitleEt.setText(event.note.getTitle());
-        mContentEt.setText(event.note.getContent());
-    }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         KeyboardUtils.showKeyboard(mContentEt);
+
+        final Bundle args = getArguments();
+        if (args != null) {
+            Note note = (Note) args.getSerializable(Constants.KEY_NOTE);
+            this.setTargetedNote(note);
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -61,16 +56,25 @@ public class DetailFragment extends BusFragment {
         mMainActivity.setOnBackStackPoppedListener(new BaseActivity.OnBackStackPoppedListener() {
             @Override
             public void onPopped() {
-                //TODO better this logic.
                 final String title = mTitleEt.getText().toString();
                 final String content = mContentEt.getText().toString();
-                if (!TextUtils.isEmpty(content)) {
-                    EventBus.getDefault().postSticky(new NoteCreatedEvent(title, content));
-                } else {
-                    Toast.makeText(mMainActivity, "Empty note not saved", Toast.LENGTH_SHORT).show();
+
+                if (!noteBeingEdited()) {
+                    mTargetedNote = new Note();
                 }
+
+                mTargetedNote.setTitle(title);
+                mTargetedNote.setContent(content);
+                mTargetedNote.save();
             }
         });
+    }
+
+    /**
+     * Tells if a note came from the list and it's being edited rather than a new one being created.
+     */
+    private boolean noteBeingEdited() {
+        return this.mTargetedNote != null;
     }
 
 
@@ -80,6 +84,29 @@ public class DetailFragment extends BusFragment {
         final View view = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, view);
         return view;
+    }
+
+
+    public static Fragment newInstance(Note note) {
+        final DetailFragment fragment = new DetailFragment();
+        if (note != null) {
+            Bundle args = new Bundle();
+            args.putSerializable(Constants.KEY_NOTE, note);
+            fragment.setArguments(args);
+        }
+        return fragment;
+    }
+
+
+
+    public void setTargetedNote(Note targetedNote) {
+        this.mTargetedNote = targetedNote;
+        fillFields(targetedNote);
+    }
+
+    private void fillFields(Note targetedNote) {
+        mTitleEt.setText(targetedNote.getTitle());
+        mContentEt.setText(targetedNote.getContent());
     }
 
 

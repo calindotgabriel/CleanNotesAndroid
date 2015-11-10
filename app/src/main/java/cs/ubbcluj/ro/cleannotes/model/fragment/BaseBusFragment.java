@@ -1,4 +1,4 @@
-package cs.ubbcluj.ro.cleannotes.model;
+package cs.ubbcluj.ro.cleannotes.model.fragment;
 
 import android.app.Fragment;
 
@@ -7,7 +7,7 @@ import de.greenrobot.event.EventBus;
 /**
  * Created by motan on 02.11.2015.
  */
-public class BaseBusFragment extends Fragment {
+public class BaseBusFragment extends BaseFragment {
 
     @Override
     public void onStop() {
@@ -15,7 +15,5 @@ public class BaseBusFragment extends Fragment {
         super.onStop();
     }
 
-    protected EventBus bus() {
-        return EventBus.getDefault();
-    }
+
 }

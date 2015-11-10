@@ -1,4 +1,4 @@
-package cs.ubbcluj.ro.cleannotes.model;
+package cs.ubbcluj.ro.cleannotes.model.fragment;
 
 /**
  * Created by motan on 02.11.2015.

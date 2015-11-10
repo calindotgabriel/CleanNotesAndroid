@@ -14,10 +14,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cs.ubbcluj.ro.cleannotes.R;
-import cs.ubbcluj.ro.cleannotes.async.LoadNotesTask;
-import cs.ubbcluj.ro.cleannotes.event.NoteCreatedEvent;
-import cs.ubbcluj.ro.cleannotes.event.NoteDeletedEvent;
-import cs.ubbcluj.ro.cleannotes.event.NotePressedEvent;
+import cs.ubbcluj.ro.cleannotes.event.OnNotePressedEvent;
 import cs.ubbcluj.ro.cleannotes.model.domain.Note;
 import de.greenrobot.event.EventBus;
 
@@ -26,6 +23,7 @@ import de.greenrobot.event.EventBus;
  */
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
+    private final String TAG = this.getClass().getCanonicalName();
     private final Context mContext;
     private List<Note> mNotes;
 
@@ -53,32 +51,13 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         return mNotes.size();
     }
 
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-        EventBus.getDefault().registerSticky(this);
-    }
+    private void deleteNote(int adapterPosition) {
+        Note note = mNotes.get(adapterPosition);
 
-    @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-        EventBus.getDefault().unregister(this);
-    }
+        mNotes.remove(note);
+        note.delete();
 
-    /**
-     * Called when a new note was added from the DetailFragment.
-     * @param event contains note data.
-     * */
-    public void onEvent(NoteCreatedEvent event) {
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Called when a note was deleted.
-     */
-    public void onEvent(NoteDeletedEvent event) {
-        new LoadNotesTask().execute();
-        notifyDataSetChanged();
+        notifyItemRemoved(adapterPosition);
     }
 
 
@@ -90,13 +69,15 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 
         @OnClick(R.id.container_nrvi)
         void onNotePresed() {
-            EventBus.getDefault().post(new NotePressedEvent(getNoteId()));
+            EventBus.getDefault().post(new OnNotePressedEvent(getNoteId()));
         }
 
         @OnClick(R.id.note_item_delete)
-        void onDeletePressed() {
-            EventBus.getDefault().post(new NoteDeletedEvent(getNoteId()));
+        void onDeletePressed()
+        {
+            deleteNote(getAdapterPosition());
         }
+
 
         @OnClick(R.id.note_item_share)
         void onSharePressed() {
@@ -109,8 +90,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             sharingIntent.setType("text/plain");
             sharingIntent.putExtra(Intent.EXTRA_SUBJECT, note.getTitle());
             sharingIntent.putExtra(Intent.EXTRA_TEXT, note.getContent());
-            mContext.startActivity(Intent.createChooser(sharingIntent, "Share CleanNote"));
+            mContext.startActivity(Intent.createChooser(sharingIntent, mContext.getString(R.string.share_note)));
         }
+
 
         /**
          * Given a position inside the adapter, returns the Id of the note.
@@ -118,6 +100,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         private Long getNoteId() {
             return mNotes.get(getAdapterPosition()).getId();
         }
+
 
         public ViewHolder(View itemView) {
             super(itemView);

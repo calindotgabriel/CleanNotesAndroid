@@ -13,11 +13,13 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cs.ubbcluj.ro.cleannotes.MainActivity;
 import cs.ubbcluj.ro.cleannotes.R;
 import cs.ubbcluj.ro.cleannotes.async.LoadNotesTask;
+import cs.ubbcluj.ro.cleannotes.event.OnNotePressedEvent;
 import cs.ubbcluj.ro.cleannotes.event.OnNotesLoadedEvent;
-import cs.ubbcluj.ro.cleannotes.model.StickyBusFragment;
 import cs.ubbcluj.ro.cleannotes.model.domain.Note;
+import cs.ubbcluj.ro.cleannotes.model.fragment.StickyBusFragment;
 import cs.ubbcluj.ro.cleannotes.view.RecyclerViewEmptySupport;
 import cs.ubbcluj.ro.cleannotes.view.adapter.NoteAdapter;
 
@@ -25,6 +27,8 @@ import cs.ubbcluj.ro.cleannotes.view.adapter.NoteAdapter;
  * Created by motan on 30.10.2015.
  */
 public class ListFragment extends StickyBusFragment {
+
+    private final String TAG = this.getClass().getCanonicalName();
 
     @Bind(R.id.rv_fl)
     RecyclerViewEmptySupport mRecyclerView;
@@ -41,6 +45,11 @@ public class ListFragment extends StickyBusFragment {
         initList(event.notes);
     }
 
+
+    public void onEvent(OnNotePressedEvent event) {
+        switchToDetailFragment(event.note);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -55,6 +64,14 @@ public class ListFragment extends StickyBusFragment {
         return view;
     }
 
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        mainActivity.getSupportActionBar().setDisplayShowTitleEnabled(true);
+    }
+
     private void initList(List<Note> notes) {
         final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
@@ -66,14 +83,14 @@ public class ListFragment extends StickyBusFragment {
 
     @OnClick(R.id.fab)
     void onFabClicked() {
-        switchToDetailFragment();
+        switchToDetailFragment(null);
     }
 
-    private void switchToDetailFragment() {
+    private void switchToDetailFragment(Note note) {
         getActivity().getFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right,
                         R.anim.enter_from_left, R.anim.exit_to_left)
-                .replace(R.id.fragment_container, new DetailFragment())
+                .replace(R.id.fragment_container, DetailFragment.newInstance(note))
                 .addToBackStack(null)
                 .commit();
     }

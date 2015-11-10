@@ -5,13 +5,11 @@ import cs.ubbcluj.ro.cleannotes.model.domain.Note;
 /**
  * Created by motan on 02.11.2015.
  */
-public class NotePressedEvent {
+public class OnNotePressedEvent {
 
-    private final Long id;
     public final Note note;
 
-    public NotePressedEvent(Long id) {
-        this.id = id;
+    public OnNotePressedEvent(Long id) {
         this.note = Note.findById(Note.class, id);
     }
 }

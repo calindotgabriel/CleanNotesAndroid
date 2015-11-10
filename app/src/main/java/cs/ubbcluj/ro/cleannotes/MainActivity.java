@@ -9,7 +9,7 @@ import butterknife.ButterKnife;
 import cs.ubbcluj.ro.cleannotes.model.BaseActivity;
 import cs.ubbcluj.ro.cleannotes.view.fragment.ListFragment;
 
-public class MainActivity extends BaseActivity{
+public class MainActivity extends BaseActivity {
 
     @Bind(R.id.toolbar)
     Toolbar mToolbar;
